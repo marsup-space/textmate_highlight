@@ -1,0 +1,15 @@
+name: textmate_highlight
+description: VSCode-quality syntax highlighting using TextMate grammars. Pure Dart, no Flutter dependency.
+version: 0.1.0
+repository: https://github.com/marsup-space/textmate_highlight
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  collection: ^1.18.0
+  string_scanner: ^1.2.0
+
+dev_dependencies:
+  test: ^1.25.0
+  lints: ^5.0.0
