@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 /// A text style with optional color and font attributes.
 /// Platform-independent - map these to your UI framework's text style.
@@ -92,52 +93,36 @@ class HighlightTheme {
   /// Load a dark theme from the bundled theme files.
   static Future<HighlightTheme> loadDarkTheme() {
     return loadFromAssets([
-      'themes/dark_vs.json',
-      'themes/dark_plus.json',
+      'package:textmate_highlight/themes/dark_vs.json',
+      'package:textmate_highlight/themes/dark_plus.json',
     ]);
   }
 
   /// Load a light theme from the bundled theme files.
   static Future<HighlightTheme> loadLightTheme() {
     return loadFromAssets([
-      'themes/light_vs.json',
-      'themes/light_plus.json',
+      'package:textmate_highlight/themes/light_vs.json',
+      'package:textmate_highlight/themes/light_plus.json',
     ]);
   }
 
-  /// Load themes from asset paths relative to the package directory.
-  static Future<HighlightTheme> loadFromAssets(List<String> assetPaths) async {
+  /// Load themes from package asset URIs.
+  static Future<HighlightTheme> loadFromAssets(List<String> assetUris) async {
     final theme = HighlightTheme();
-    for (final path in assetPaths) {
-      final file = File(path);
-      if (file.existsSync()) {
-        theme._parseTheme(await file.readAsString());
-      } else {
-        // Try resolving relative to package
-        final scriptPath = Platform.script.toFilePath();
-        final packageDir = _findPackageDir(scriptPath);
-        if (packageDir != null) {
-          final resolved = File('$packageDir/$path');
-          if (resolved.existsSync()) {
-            theme._parseTheme(await resolved.readAsString());
+    for (final assetUri in assetUris) {
+      try {
+        final uri = await Isolate.resolvePackageUri(Uri.parse(assetUri));
+        if (uri != null) {
+          final file = File.fromUri(uri);
+          if (file.existsSync()) {
+            theme._parseTheme(await file.readAsString());
             continue;
           }
         }
-        throw StateError('Could not find theme file: $path');
-      }
+      } catch (_) {}
+      throw StateError('Could not find theme file: $assetUri');
     }
     return theme;
-  }
-
-  static String? _findPackageDir(String path) {
-    var current = Directory(path).existsSync() ? path : File(path).parent.path;
-    while (current != '/') {
-      if (File('$current/pubspec.yaml').existsSync()) {
-        return current;
-      }
-      current = Directory(current).parent.path;
-    }
-    return null;
   }
 
   void _parseTheme(String json) {

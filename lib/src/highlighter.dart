@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:textmate_highlight/src/span_parser.dart';
 import 'package:textmate_highlight/src/token.dart';
@@ -70,50 +71,19 @@ class Highlighter {
   }
 
   static Future<String> _loadGrammar(String language) async {
-    // Try multiple paths to find the grammar file
-    final paths = <String>[
-      'grammars/$language.json',
-      'package:textmate_highlight/grammars/$language.json',
-    ];
-
-    // Find package directory
-    final packageDir = _findPackageDir();
-    if (packageDir != null) {
-      paths.insert(0, '$packageDir/grammars/$language.json');
-    }
-
-    for (final path in paths) {
-      final file = File(path);
-      if (file.existsSync()) {
-        return file.readAsString();
-      }
-    }
-
-    throw StateError(
-        'Could not find grammar file for "$language". Searched: $paths');
-  }
-
-  static String? _findPackageDir() {
-    final scriptPath = Platform.script.toFilePath();
-    var current = File(scriptPath).parent.path;
-    while (current != '/') {
-      if (File('$current/pubspec.yaml').existsSync()) {
-        final name = _getPackageName(current);
-        if (name == 'textmate_highlight') return current;
-      }
-      current = Directory(current).parent.path;
-    }
-    return null;
-  }
-
-  static String _getPackageName(String dir) {
+    // Resolve via package URI - grammars are under lib/ so they're accessible
     try {
-      final content = File('$dir/pubspec.yaml').readAsStringSync();
-      final match =
-          RegExp(r'^name:\s*(\S+)', multiLine: true).firstMatch(content);
-      return match?.group(1) ?? '';
-    } catch (_) {
-      return '';
-    }
+      final uri = await Isolate.resolvePackageUri(
+          Uri.parse('package:textmate_highlight/grammars/$language.json'));
+      if (uri != null) {
+        final file = File.fromUri(uri);
+        if (file.existsSync()) {
+          return file.readAsString();
+        }
+      }
+    } catch (_) {}
+
+    throw StateError('Could not find grammar file for "$language". '
+        'Ensure the textmate_highlight package is properly installed.');
   }
 }
