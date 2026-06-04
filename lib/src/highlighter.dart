@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 
+import 'package:textmate_highlight/src/grammars.dart';
 import 'package:textmate_highlight/src/span_parser.dart';
 import 'package:textmate_highlight/src/token.dart';
 
@@ -71,7 +72,10 @@ class Highlighter {
   }
 
   static Future<String> _loadGrammar(String language) async {
-    // Resolve via package URI - grammars are under lib/ so they're accessible
+    if (embeddedGrammars.containsKey(language)) {
+      return embeddedGrammars[language]!;
+    }
+
     try {
       final uri = await Isolate.resolvePackageUri(
           Uri.parse('package:textmate_highlight/grammars/$language.json'));

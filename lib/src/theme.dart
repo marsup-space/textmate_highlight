@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 
+import 'package:textmate_highlight/src/themes.dart';
+
 /// A text style with optional color and font attributes.
 /// Platform-independent - map these to your UI framework's text style.
 class TextStyle {
@@ -110,6 +112,13 @@ class HighlightTheme {
   static Future<HighlightTheme> loadFromAssets(List<String> assetUris) async {
     final theme = HighlightTheme();
     for (final assetUri in assetUris) {
+      final fileName = assetUri.split('/').last;
+      final themeName = fileName.replaceFirst('.json', '');
+      if (embeddedThemes.containsKey(themeName)) {
+        theme._parseTheme(embeddedThemes[themeName]!);
+        continue;
+      }
+
       try {
         final uri = await Isolate.resolvePackageUri(Uri.parse(assetUri));
         if (uri != null) {
