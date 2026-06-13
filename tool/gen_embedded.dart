@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 void main() {
@@ -19,7 +18,8 @@ void main() {
 
 void _genDartMap(Directory dir, String varName, String outputPath) {
   final entries = <String>[];
-  for (final file in dir.list().sorted((a, b) => a.path.compareTo(b.path))) {
+  final files = dir.listSync()..sort((a, b) => a.path.compareTo(b.path));
+  for (final file in files) {
     if (!file.path.endsWith('.json')) continue;
     final name = file.uri.pathSegments.last.replaceAll('.json', '');
     final content = File(file.path).readAsStringSync();
@@ -44,5 +44,5 @@ String _escapeDartString(String s) {
       .replaceAll('\n', '\\n')
       .replaceAll('\r', '\\r')
       .replaceAll('\t', '\\t')
-      .replaceAll('$', '\\$');
+      .replaceAll(r'$', r'\$');
 }
