@@ -71,6 +71,37 @@ class Highlighter {
     ];
   }
 
+  /// Highlights incrementally, reusing a previous [checkpoint] when
+  /// content has been appended.
+  ///
+  /// When streaming code, new content is always appended to the end.
+  /// Instead of re-parsing the entire document, this method resumes
+  /// from the checkpoint's position, parsing only the new content.
+  /// This reduces parsing time from O(total_content) to O(new_content).
+  ///
+  /// The [fullCode] must start with the same text that was used to
+  /// create the checkpoint.
+  ///
+  /// Returns an [IncrementalHighlightResult] containing the tokens
+  /// and a new checkpoint for the next incremental update.
+  IncrementalHighlightResult highlightIncremental(
+    String fullCode,
+    ParseCheckpoint? checkpoint,
+  ) {
+    final result = SpanParser.parseIncremental(_grammar, fullCode, checkpoint);
+    return IncrementalHighlightResult(
+      tokens: [
+        for (final span in result.spans)
+          HighlightedToken(
+            start: span.start,
+            end: span.end,
+            scopes: span.scopes,
+          ),
+      ],
+      checkpoint: result.checkpoint,
+    );
+  }
+
   static Future<String> _loadGrammar(String language) async {
     if (embeddedGrammars.containsKey(language)) {
       return embeddedGrammars[language]!;
@@ -90,4 +121,23 @@ class Highlighter {
     throw StateError('Could not find grammar file for "$language". '
         'Ensure the textmate_highlight package is properly installed.');
   }
+}
+
+/// Result of an incremental highlight operation.
+///
+/// Contains the full list of highlighted tokens and a checkpoint
+/// that can be used for the next incremental update when more
+/// content is appended.
+class IncrementalHighlightResult {
+  IncrementalHighlightResult({
+    required this.tokens,
+    required this.checkpoint,
+  });
+
+  /// The complete list of highlighted tokens for the full source.
+  final List<HighlightedToken> tokens;
+
+  /// A checkpoint that captures the parser state, allowing the next
+  /// incremental highlight to resume from this position.
+  final ParseCheckpoint checkpoint;
 }

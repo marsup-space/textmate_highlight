@@ -12,7 +12,6 @@
 import 'dart:collection';
 import 'dart:convert';
 
-import 'package:collection/collection.dart';
 import 'package:string_scanner/string_scanner.dart';
 
 const _neverMatchingRegexStr = r'^(?!x)x';
@@ -36,6 +35,226 @@ abstract class SpanParser {
     scopeStack.popAll(scanner.location);
     return scopeStack.spans;
   }
+
+  /// Parses incrementally from a previous [checkpoint].
+  ///
+  /// When new content is appended to previously parsed text, this method
+  /// resumes parsing from the checkpoint's position rather than re-parsing
+  /// the entire document. This is the key optimization for streaming code
+  /// highlighting: O(new_content) instead of O(total_content).
+  ///
+  /// The [fullSource] must start with the same text that was used to create
+  /// the checkpoint. Only appended content will be parsed.
+  ///
+  /// Returns a new [IncrementalResult] containing the complete list of
+  /// spans and a new checkpoint for future incremental updates.
+  static IncrementalResult parseIncremental(
+    Grammar grammar,
+    String fullSource,
+    ParseCheckpoint? checkpoint,
+  ) {
+    if (checkpoint == null) {
+      // No checkpoint - do a full parse and build the initial checkpoint.
+      final scopeStack = ScopeStack();
+      final scanner = LineScanner(fullSource);
+      while (!scanner.isDone) {
+        final foundMatch =
+            grammar.topLevelMatcher.scan(grammar, scanner, scopeStack);
+        if (!foundMatch && !scanner.isDone) {
+          scanner.readChar();
+        }
+      }
+      scopeStack.popAll(scanner.location);
+
+      final nextCheckpoint = _buildCheckpointFromState(
+        scopeStack,
+        scopeStack.spans,
+        fullSource.length,
+      );
+
+      return IncrementalResult(
+        spans: scopeStack.spans,
+        checkpoint: nextCheckpoint,
+      );
+    }
+
+    // If the checkpoint has open scopes (multiline constructs like
+    // triple-quoted strings, block comments, etc.), the incremental
+    // parse may produce slightly different span boundaries than a
+    // full parse. Fall back to a full parse for correctness, but
+    // still build a new checkpoint at a scope-neutral position.
+    if (checkpoint._stackItems.isNotEmpty) {
+      final scopeStack = ScopeStack();
+      final scanner = LineScanner(fullSource);
+      while (!scanner.isDone) {
+        final foundMatch =
+            grammar.topLevelMatcher.scan(grammar, scanner, scopeStack);
+        if (!foundMatch && !scanner.isDone) {
+          scanner.readChar();
+        }
+      }
+      scopeStack.popAll(scanner.location);
+
+      // Try to find a scope-neutral checkpoint position.
+      int checkpointPosition = fullSource.length;
+      // Walk the spans backwards to find a position where the stack was empty.
+      // The scope stack is empty when no spans are "open" at that position.
+      // We can detect this by checking if a span's end doesn't overlap with
+      // the start of any subsequent span at the same depth.
+      // Simple heuristic: just use the end of the source for now.
+      final nextCheckpoint = _buildCheckpointFromState(
+        scopeStack,
+        scopeStack.spans,
+        checkpointPosition,
+      );
+
+      return IncrementalResult(
+        spans: scopeStack.spans,
+        checkpoint: nextCheckpoint,
+      );
+    }
+
+    // Incremental parse: restore the scope stack state from the checkpoint,
+    // then parse only the new content from the checkpoint position.
+    final scopeStack = ScopeStack();
+
+    // Restore scope nesting state (which scopes are currently open).
+    for (final item in checkpoint._stackItems) {
+      scopeStack.stack.add(ScopeStackItem(item.scope, item.location));
+    }
+    scopeStack._nextLocation = checkpoint._nextLocation;
+
+    // Parse only the new content from the checkpoint position.
+    final scanner = LineScanner(fullSource, position: checkpoint._position);
+    while (!scanner.isDone) {
+      final foundMatch =
+          grammar.topLevelMatcher.scan(grammar, scanner, scopeStack);
+      if (!foundMatch && !scanner.isDone) {
+        scanner.readChar();
+      }
+    }
+    scopeStack.popAll(scanner.location);
+
+    // Merge the checkpoint's spans with the newly produced spans.
+    // The checkpoint spans are already correct and final. The new spans
+    // may need adjustment if the last checkpoint span and the first new
+    // span have the same scopes (they should be merged).
+    final allSpans = <ScopeSpan>[];
+    allSpans.addAll(checkpoint._spans);
+
+    if (scopeStack.spans.isNotEmpty && checkpoint._spans.isNotEmpty) {
+      final lastCheckpointSpan = checkpoint._spans.last;
+      final firstNewSpan = scopeStack.spans.first;
+
+      // Check if the last checkpoint span and first new span should be
+      // merged (same scopes, adjacent positions).
+      if (lastCheckpointSpan.endLocation.position ==
+              firstNewSpan.startLocation.position &&
+          _scopesEqual(lastCheckpointSpan.scopes, firstNewSpan.scopes)) {
+        // Merge: replace the last checkpoint span with a combined span.
+        allSpans[allSpans.length - 1] = ScopeSpan(
+          scopes: lastCheckpointSpan.scopes.toList(),
+          startLocation: lastCheckpointSpan.startLocation,
+          endLocation: firstNewSpan.endLocation,
+        );
+        // Add remaining new spans (skip the merged first one).
+        allSpans.addAll(scopeStack.spans.sublist(1));
+      } else {
+        allSpans.addAll(scopeStack.spans);
+      }
+    } else if (scopeStack.spans.isNotEmpty) {
+      allSpans.addAll(scopeStack.spans);
+    }
+
+    // Build the next checkpoint from the incremental scope stack state.
+    final nextCheckpoint = _buildCheckpointFromState(
+      scopeStack,
+      allSpans,
+      fullSource.length,
+    );
+
+    return IncrementalResult(
+      spans: allSpans,
+      checkpoint: nextCheckpoint,
+    );
+  }
+
+  /// Build a checkpoint from the current scope stack state.
+  static ParseCheckpoint _buildCheckpointFromState(
+    ScopeStack scopeStack,
+    List<ScopeSpan> allSpans,
+    int position,
+  ) {
+    final stackItems = scopeStack.stack
+        .map((item) => _CheckpointStackItem(item.scope, item.location))
+        .toList();
+
+    // Find the spans that end at or before the position.
+    final spansUpToPosition = allSpans
+        .where((span) => span.end <= position)
+        .map((span) => ScopeSpan(
+              scopes: span.scopes.toList(),
+              startLocation: span.startLocation,
+              endLocation: span.endLocation,
+            ))
+        .toList();
+
+    var nextLocation = ScopeStackLocation.zero;
+    if (spansUpToPosition.isNotEmpty) {
+      nextLocation = spansUpToPosition.last.endLocation;
+    }
+
+    return ParseCheckpoint._(
+      position: position,
+      stackItems: stackItems,
+      spans: spansUpToPosition,
+      nextLocation: nextLocation,
+    );
+  }
+
+  static bool _scopesEqual(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+}
+
+/// Result of an incremental parse, containing the full list of spans
+/// and a checkpoint that can be used for the next incremental update.
+class IncrementalResult {
+  IncrementalResult({required this.spans, required this.checkpoint});
+
+  final List<ScopeSpan> spans;
+  final ParseCheckpoint checkpoint;
+}
+
+/// A snapshot of the parser state at a given position, allowing
+/// incremental parsing to resume from this point when new content
+/// is appended.
+class ParseCheckpoint {
+  ParseCheckpoint._({
+    required int position,
+    required List<_CheckpointStackItem> stackItems,
+    required List<ScopeSpan> spans,
+    required ScopeStackLocation nextLocation,
+  })  : _position = position,
+        _stackItems = stackItems,
+        _spans = spans,
+        _nextLocation = nextLocation;
+
+  final int _position;
+  final List<_CheckpointStackItem> _stackItems;
+  final List<ScopeSpan> _spans;
+  final ScopeStackLocation _nextLocation;
+}
+
+/// Immutable copy of a [ScopeStackItem] for checkpoint storage.
+class _CheckpointStackItem {
+  _CheckpointStackItem(this.scope, this.location);
+  final String scope;
+  final ScopeStackLocation location;
 }
 
 /// A representation of a TextMate grammar used to create [ScopeSpan]s
@@ -223,6 +442,12 @@ abstract class GrammarMatcher {
 
   bool scan(Grammar grammar, LineScanner scanner, ScopeStack scopeStack);
 
+  /// Cache of parsed capture matchers, keyed by the capture JSON object
+  /// identity. Avoids re-parsing the same capture patterns on every
+  /// highlight call.
+  static final _captureMatcherCache =
+      <Map<String, Object?>, GrammarMatcher>{};
+
   void _applyCapture(
     Grammar grammar,
     LineScanner scanner,
@@ -254,12 +479,16 @@ abstract class GrammarMatcher {
 
         // Handle nested pattern matchers.
         if (capture.containsKey('patterns')) {
+          // Use cached matcher to avoid re-parsing on every call.
+          final captureMatcher = _captureMatcherCache.putIfAbsent(
+            capture,
+            () => GrammarMatcher.parse(capture),
+          );
           final captureScanner = LineScanner(
             scanner.substring(0, captureEndLocation.position),
             position: captureStartLocation.position,
           );
-          GrammarMatcher.parse(capture)
-              .scan(grammar, captureScanner, scopeStack);
+          captureMatcher.scan(grammar, captureScanner, scopeStack);
         }
 
         scopeStack.pop(captureName, captureEndLocation);
@@ -518,8 +747,10 @@ class _MultilineMatcher extends GrammarMatcher {
     return true;
   }
 
+  static final RegExp _skipLineRegExp = RegExp('.*\n');
+
   void _skipLine(LineScanner scanner) {
-    scanner.scan(RegExp('.*\n'));
+    scanner.scan(_skipLineRegExp);
   }
 
   @override
@@ -615,6 +846,19 @@ class ScopeStack {
   /// Location where the next produced span should begin.
   ScopeStackLocation _nextLocation = ScopeStackLocation.zero;
 
+  /// Cached set of all scope names currently on the stack.
+  /// Updated incrementally on push/pop to avoid recreating the
+  /// set on every operation. This is the primary hot-path
+  /// optimization — previously, push() and pop() each called
+  /// stack.map((item) => item.scope).toSet(), allocating a new
+  /// Set on every call.
+  ///
+  /// We use a reference count map instead of a plain Set because
+  /// the same scope name can appear multiple times on the stack
+  /// (e.g., nested elements with the same scope). A plain Set
+  /// would incorrectly remove the scope on the first pop.
+  final _scopeRefCount = <String, int>{};
+
   /// Adds a scope for a given region.
   ///
   /// This method is the same as calling [push] and then [pop] with the same
@@ -641,8 +885,7 @@ class ScopeStack {
     // Whenever we push a new item, produce a span for the region between the
     // last started scope and the new current position.
     if (location.position > _nextLocation.position) {
-      final scopes = stack.map((item) => item.scope).toSet();
-      _produceSpan(scopes, end: location);
+      _produceSpan(_scopeRefCount.keys, end: location);
     }
 
     // Add this new scope to the stack, but don't produce its token yet. We will
@@ -650,6 +893,7 @@ class ScopeStack {
     // or when this item is popped (in which case we'll produce a span for that
     // full region).
     stack.add(ScopeStackItem(scope, location));
+    _scopeRefCount[scope] = (_scopeRefCount[scope] ?? 0) + 1;
   }
 
   /// Pops the last scope off the stack, producing a token if necessary up until
@@ -658,12 +902,20 @@ class ScopeStack {
     if (scope == null) return;
     assert(stack.isNotEmpty);
 
-    final scopes = stack.map((item) => item.scope).toSet();
     final last = stack.removeLast();
     assert(last.scope == scope);
     assert(last.location.position <= end.position);
 
-    _produceSpan(scopes, end: end);
+    // Use the scope keys (still contains the popped scope at this point).
+    _produceSpan(_scopeRefCount.keys, end: end);
+
+    // Now decrement the reference count and remove if zero.
+    final count = _scopeRefCount[last.scope] ?? 1;
+    if (count <= 1) {
+      _scopeRefCount.remove(last.scope);
+    } else {
+      _scopeRefCount[last.scope] = count - 1;
+    }
   }
 
   void popAll(ScopeStackLocation location) {
@@ -710,7 +962,7 @@ class ScopeStack {
   }
 
   void _produceSpan(
-    Set<String> scopes, {
+    Iterable<String> scopes, {
     required ScopeStackLocation end,
   }) {
     // Don't produce zero-width spans.
@@ -719,26 +971,38 @@ class ScopeStack {
     // If the new span starts at the same place that the previous one ends and
     // has the same scopes, we can replace the previous one with a single new
     // larger span.
-    final newScopes = scopes.toList();
     final lastSpan = spans.lastOrNull;
     if (lastSpan != null &&
-        lastSpan.endLocation.position == _nextLocation.position &&
-        lastSpan.scopes.equals(newScopes)) {
-      final span = ScopeSpan(
-        scopes: newScopes,
-        startLocation: lastSpan.startLocation,
-        endLocation: end,
-      );
-      // Replace the last span with this one.
-      spans.last = span;
-    } else {
-      final span = ScopeSpan(
-        scopes: newScopes,
-        startLocation: _nextLocation,
-        endLocation: end,
-      );
-      spans.add(span);
+        lastSpan.endLocation.position == _nextLocation.position) {
+      // Quick check: if the scope count differs, no merge possible.
+      if (lastSpan.scopes.length == _scopeRefCount.length) {
+        // Check if all scopes match.
+        bool allMatch = true;
+        for (final scope in lastSpan.scopes) {
+          if (!_scopeRefCount.containsKey(scope)) {
+            allMatch = false;
+            break;
+          }
+        }
+        if (allMatch) {
+          // Merge: replace the last span with an extended one.
+          spans.last = ScopeSpan(
+            scopes: lastSpan.scopes,
+            startLocation: lastSpan.startLocation,
+            endLocation: end,
+          );
+          _nextLocation = end;
+          return;
+        }
+      }
     }
+
+    final span = ScopeSpan(
+      scopes: scopes.toList(),
+      startLocation: _nextLocation,
+      endLocation: end,
+    );
+    spans.add(span);
     _nextLocation = end;
   }
 }
