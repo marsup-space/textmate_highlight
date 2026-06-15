@@ -1,0 +1,107 @@
+{
+  "name": "Markdown",
+  "version": "1.0.0",
+  "fileTypes": ["md", "markdown"],
+  "scopeName": "text.html.markdown",
+  "patterns": [
+    { "include": "#heading" },
+    { "include": "#fence" },
+    { "include": "#blockquote" },
+    { "include": "#list" },
+    { "include": "#hr" },
+    { "include": "#link" },
+    { "include": "#bold-italic" },
+    { "include": "#code-inline" }
+  ],
+  "repository": {
+    "heading": {
+      "patterns": [
+        {
+          "name": "markup.heading.markdown",
+          "match": "^(#{1,6})\\s.*$",
+          "captures": {
+            "1": { "name": "punctuation.definition.heading.markdown" }
+          }
+        }
+      ]
+    },
+    "fence": {
+      "patterns": [
+        {
+          "name": "markup.fenced_code.block.markdown",
+          "begin": "^```",
+          "end": "^```\\s*$"
+        }
+      ]
+    },
+    "blockquote": {
+      "patterns": [
+        {
+          "name": "markup.quote.markdown",
+          "begin": "^\\s*>\\s",
+          "end": "$"
+        }
+      ]
+    },
+    "list": {
+      "patterns": [
+        {
+          "name": "markup.list.unnumbered.markdown",
+          "match": "^\\s*[-*+]\\s+"
+        },
+        {
+          "name": "markup.list.ordered.markdown",
+          "match": "^\\s*\\d+\\.\\s+"
+        }
+      ]
+    },
+    "hr": {
+      "patterns": [
+        {
+          "name": "meta.separator.markdown",
+          "match": "^[ \t]*([-*_][ \t]*){3,}[ \t]*$"
+        }
+      ]
+    },
+    "link": {
+      "patterns": [
+        {
+          "name": "markup.underline.link.markdown",
+          "match": "\\[[^\\]]+\\]\\([^)]+\\)"
+        },
+        {
+          "name": "markup.underline.link.markdown",
+          "match": "<https?://[^>]+>"
+        }
+      ]
+    },
+    "bold-italic": {
+      "patterns": [
+        {
+          "name": "markup.bold.markdown",
+          "match": "\\*\\*[^*]+\\*\\*"
+        },
+        {
+          "name": "markup.italic.markdown",
+          "match": "(?<!\\*)\\*[^*]+\\*(?!\\*)"
+        },
+        {
+          "name": "markup.bold.markdown",
+          "match": "__[^_]+__"
+        },
+        {
+          "name": "markup.italic.markdown",
+          "match": "(?<!_)_[^_]+_(?!_)"
+        }
+      ]
+    },
+    "code-inline": {
+      "patterns": [
+        {
+          "name": "markup.inline.raw.markdown",
+          "match": "`[^`]+`"
+        }
+      ]
+    }
+  }
+}

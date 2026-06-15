@@ -1,0 +1,117 @@
+{
+  "name": "PHP",
+  "version": "1.0.0",
+  "fileTypes": ["php", "php5"],
+  "scopeName": "source.php",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#keywords" },
+    { "include": "#types" },
+    { "include": "#numbers" },
+    { "include": "#variables" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.block.documentation.php",
+          "begin": "/\\*\\*",
+          "end": "\\*/"
+        },
+        {
+          "name": "comment.block.php",
+          "begin": "/\\*",
+          "end": "\\*/"
+        },
+        {
+          "name": "comment.line.double-slash.php",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.line.hash.php",
+          "match": "#.*$"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.php",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.php",
+              "match": "\\\\."
+            },
+            {
+              "name": "string.interpolated.php",
+              "begin": "\\{",
+              "end": "\\}"
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.php",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            {
+              "name": "constant.character.escape.php",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.php",
+          "match": "\\b(if|else|elseif|endif|for|foreach|endforeach|while|endwhile|do|switch|case|break|continue|return|yield|goto|default|as|throw|try|catch|finally)\\b"
+        },
+        {
+          "name": "storage.modifier.php",
+          "match": "\\b(public|private|protected|static|final|abstract|readonly|var|const|volatile|async|await)\\b"
+        },
+        {
+          "name": "storage.type.php",
+          "match": "\\b(int|integer|float|double|string|bool|boolean|array|object|null|void|mixed|never|true|false|null)\\b"
+        },
+        {
+          "name": "keyword.declaration.php",
+          "match": "\\b(class|interface|trait|enum|namespace|use|function|fn|new)\\b"
+        },
+        {
+          "name": "keyword.other.php",
+          "match": "\\b(echo|print|die|exit|empty|isset|unset|include|include_once|require|require_once|list|array)\\b"
+        }
+      ]
+    },
+    "types": {
+      "patterns": [
+        {
+          "name": "entity.name.type.php",
+          "match": "\\b[A-Z][A-Za-z0-9_]*\\b"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.php",
+          "match": "\\b(0[xX][0-9a-fA-F]+|\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)\\b"
+        }
+      ]
+    },
+    "variables": {
+      "patterns": [
+        {
+          "name": "variable.other.php",
+          "match": "\\$[A-Za-z_][A-Za-z0-9_]*"
+        }
+      ]
+    }
+  }
+}

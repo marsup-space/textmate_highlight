@@ -1,0 +1,62 @@
+{
+  "name": "R",
+  "version": "1.0.0",
+  "fileTypes": ["r", "R"],
+  "scopeName": "source.r",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#keywords" },
+    { "include": "#numbers" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.r",
+          "match": "#.*$"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.r",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.r",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.r",
+          "begin": "'",
+          "end": "'"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.r",
+          "match": "\\b(if|else|for|while|repeat|break|next|return|function|in|switch)\\b"
+        },
+        {
+          "name": "storage.modifier.r",
+          "match": "\\b(TRUE|FALSE|NULL|NA|NaN|Inf|pi|letters|LETTERS|month.name|month.abb|T|F)\\b"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.r",
+          "match": "\\b(\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?L?)\\b"
+        }
+      ]
+    }
+  }
+}

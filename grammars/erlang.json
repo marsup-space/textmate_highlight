@@ -1,0 +1,61 @@
+{
+  "name": "Erlang",
+  "version": "1.0.0",
+  "fileTypes": ["erl", "hrl"],
+  "scopeName": "source.erlang",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#keywords" },
+    { "include": "#numbers" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.percent.erlang",
+          "match": "%.*$"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.erlang",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.erlang",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.erlang",
+          "match": "\\b(if|else|end|case|of|receive|after|try|catch|throw|exit|raise|begin|fun|when|andalso|orelse|not|and|or|xor|bnot|bsl|bsr|band|bor|bxor)\\b"
+        },
+        {
+          "name": "keyword.declaration.erlang",
+          "match": "\\b(module|export|import|author|callback|spec|define|record|include|include_lib|undefine|behaviour|behavior|vsn|on_load|optional_callbacks|nif|file|attribute)\\b"
+        },
+        {
+          "name": "storage.type.erlang",
+          "match": "\\b(integer|float|number|atom|string|list|tuple|binary|bitstring|boolean|byte|char|function|map|node|pid|port|reference|term|any|implementation-defined|arity)\\b"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.erlang",
+          "match": "\\b(\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?|#\\d+[A-Z])\\b"
+        }
+      ]
+    }
+  }
+}

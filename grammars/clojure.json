@@ -1,0 +1,61 @@
+{
+  "name": "Clojure",
+  "version": "1.0.0",
+  "fileTypes": ["clj", "cljs", "cljc", "edn"],
+  "scopeName": "source.clojure",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#keywords" },
+    { "include": "#numbers" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.semicolon.clojure",
+          "match": ";.*$"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.clojure",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.clojure",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.clojure",
+          "match": "\\b(def|defn|defn-|defmacro|defmulti|defmethod|defonce|defprotocol|defrecord|deftype|definterface|defproject|defschema|defn-|defcustom|definline|fn|if|if-not|if-let|when|when-not|when-let|cond|condp|case|do|doseq|dotimes|dorun|doall|let|letfn|loop|recur|throw|try|catch|finally|raise|assert)\\b"
+        },
+        {
+          "name": "storage.modifier.clojure",
+          "match": "\\b(ns|require|use|import|refer|alias|refer-clojure|in-ns|loading|loaded)\\b"
+        },
+        {
+          "name": "constant.language.clojure",
+          "match": "\\b(true|false|nil)\\b"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.clojure",
+          "match": "\\b(0[xX][0-9a-fA-F]+|\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?[rMdN]?)\\b"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "name": "Diff",
+  "version": "1.0.0",
+  "fileTypes": ["diff", "patch"],
+  "scopeName": "source.diff",
+  "patterns": [
+    { "include": "#header" },
+    { "include": "#hunk" },
+    { "include": "#addition" },
+    { "include": "#deletion" }
+  ],
+  "repository": {
+    "header": {
+      "patterns": [
+        {
+          "name": "meta.diff.range.normal",
+          "match": "^(@@).*(@@).*$",
+          "captures": {
+            "1": { "name": "punctuation.definition.range.diff" },
+            "2": { "name": "punctuation.definition.range.diff" }
+          }
+        },
+        {
+          "name": "meta.diff.header",
+          "match": "^(---|\\+\\+\\+|\\*\\*\\*).*$",
+          "captures": {
+            "1": { "name": "meta.toc-list.banner.normal.diff" }
+          }
+        },
+        {
+          "name": "meta.diff.header.from-file",
+          "match": "^(From|Index):.*$"
+        }
+      ]
+    },
+    "hunk": {
+      "patterns": [
+        {
+          "name": "punctuation.definition.range.diff",
+          "match": "^@@.*@@$"
+        }
+      ]
+    },
+    "addition": {
+      "patterns": [
+        {
+          "name": "markup.inserted.diff",
+          "match": "^\\+.*$"
+        }
+      ]
+    },
+    "deletion": {
+      "patterns": [
+        {
+          "name": "markup.deleted.diff",
+          "match": "^-.*$"
+        }
+      ]
+    }
+  }
+}

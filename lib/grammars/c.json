@@ -1,0 +1,99 @@
+{
+  "name": "C",
+  "version": "1.0.0",
+  "fileTypes": ["c", "h"],
+  "scopeName": "source.c",
+  "patterns": [
+    { "include": "#preprocessor" },
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#keywords" },
+    { "include": "#types" },
+    { "include": "#numbers" }
+  ],
+  "repository": {
+    "preprocessor": {
+      "patterns": [
+        {
+          "name": "meta.preprocessor.c",
+          "match": "^\\s*#\\s*(include|define|undef|if|ifdef|ifndef|else|elif|endif|error|pragma|line)\\b.*$"
+        }
+      ]
+    },
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.block.c",
+          "begin": "/\\*",
+          "end": "\\*/"
+        },
+        {
+          "name": "comment.line.double-slash.c",
+          "match": "//.*$"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.c",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.c",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.c",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            {
+              "name": "constant.character.escape.c",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.c",
+          "match": "\\b(if|else|for|while|do|switch|case|break|continue|return|goto|default)\\b"
+        },
+        {
+          "name": "storage.modifier.c",
+          "match": "\\b(auto|register|static|extern|typedef|const|volatile|signed|unsigned|inline|restrict|_Atomic)\\b"
+        },
+        {
+          "name": "storage.type.c",
+          "match": "\\b(void|char|short|int|long|float|double|signed|unsigned|_Bool|size_t|ssize_t|ptrdiff_t|int8_t|int16_t|int32_t|int64_t|uint8_t|uint16_t|uint32_t|uint64_t)\\b"
+        },
+        {
+          "name": "keyword.other.c",
+          "match": "\\b(sizeof|struct|union|enum|NULL|nullptr)\\b"
+        }
+      ]
+    },
+    "types": {
+      "patterns": [
+        {
+          "name": "entity.name.type.c",
+          "match": "\\b[A-Z][A-Za-z0-9_]*\\b"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.c",
+          "match": "\\b(0[xX][0-9a-fA-F]+[uUlL]*|\\d+[uUlL]*|\\d+\\.\\d+[fFlL]?)\\b"
+        }
+      ]
+    }
+  }
+}

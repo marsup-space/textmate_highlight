@@ -1,0 +1,83 @@
+{
+  "name": "XML",
+  "version": "1.0.0",
+  "fileTypes": ["xml", "xsl", "xslt", "svg"],
+  "scopeName": "text.xml",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#cdata" },
+    { "include": "#tags" },
+    { "include": "#declaration" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.block.xml",
+          "begin": "<!--",
+          "end": "-->"
+        }
+      ]
+    },
+    "cdata": {
+      "patterns": [
+        {
+          "name": "string.unquoted.cdata.xml",
+          "begin": "<!\\[CDATA\\[",
+          "end": "\\]\\]>"
+        }
+      ]
+    },
+    "declaration": {
+      "patterns": [
+        {
+          "name": "meta.tag.preprocessor.xml",
+          "begin": "<\\?xml",
+          "end": "\\?>"
+        }
+      ]
+    },
+    "tags": {
+      "patterns": [
+        {
+          "name": "meta.tag.xml",
+          "begin": "(</?)([A-Za-z_][A-Za-z0-9_\\-.:]*)",
+          "beginCaptures": {
+            "1": { "name": "punctuation.definition.tag.begin.xml" },
+            "2": { "name": "entity.name.tag.xml" }
+          },
+          "end": "(/?>)",
+          "endCaptures": {
+            "1": { "name": "punctuation.definition.tag.end.xml" }
+          },
+          "patterns": [
+            { "include": "#attribute" },
+            { "include": "#strings" }
+          ]
+        }
+      ]
+    },
+    "attribute": {
+      "patterns": [
+        {
+          "name": "entity.other.attribute-name.xml",
+          "match": "\\b([A-Za-z_:][A-Za-z0-9_\\-:.]*)\\s*(=)"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.xml",
+          "begin": "\"",
+          "end": "\""
+        },
+        {
+          "name": "string.quoted.single.xml",
+          "begin": "'",
+          "end": "'"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "name": "TOML",
+  "version": "1.0.0",
+  "fileTypes": ["toml"],
+  "scopeName": "source.toml",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#tables" },
+    { "include": "#strings" },
+    { "include": "#numbers" },
+    { "include": "#booleans" },
+    { "include": "#keys" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.toml",
+          "match": "#.*$"
+        }
+      ]
+    },
+    "tables": {
+      "patterns": [
+        {
+          "name": "meta.table.toml",
+          "begin": "^\\s*(\\[\\[[^\\]]+\\]\\])|(\\[\\[[^\\]]+\\]\\])",
+          "end": "(?=^\\s*\\[|^\\s*$)",
+          "beginCaptures": {
+            "0": { "name": "entity.name.section.array.toml" }
+          }
+        },
+        {
+          "name": "meta.table.toml",
+          "begin": "^\\s*\\[[^\\]]+\\]",
+          "end": "(?=^\\s*\\[|^\\s*$)",
+          "beginCaptures": {
+            "0": { "name": "entity.name.section.toml" }
+          }
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.toml",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.toml",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.toml",
+          "begin": "'",
+          "end": "'"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.toml",
+          "match": "(?<![A-Za-z0-9_])(-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?|0x[0-9a-fA-F]+|0o[0-7]+|0b[01]+)"
+        }
+      ]
+    },
+    "booleans": {
+      "patterns": [
+        {
+          "name": "constant.language.boolean.toml",
+          "match": "\\b(true|false)\\b"
+        }
+      ]
+    },
+    "keys": {
+      "patterns": [
+        {
+          "name": "entity.name.tag.toml",
+          "match": "^\\s*([A-Za-z0-9_\\-.]+)(?=\\s*=)"
+        },
+        {
+          "name": "entity.name.tag.toml",
+          "match": "(?<=^|\\s|\\.)([A-Za-z0-9_\\-.]+)(?=\\s*=)"
+        }
+      ]
+    }
+  }
+}

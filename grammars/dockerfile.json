@@ -1,0 +1,62 @@
+{
+  "name": "Dockerfile",
+  "version": "1.0.0",
+  "fileTypes": ["dockerfile"],
+  "scopeName": "source.dockerfile",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#instructions" },
+    { "include": "#strings" },
+    { "include": "#variables" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.dockerfile",
+          "match": "#.*$"
+        }
+      ]
+    },
+    "instructions": {
+      "patterns": [
+        {
+          "name": "keyword.control.dockerfile",
+          "match": "^(FROM|RUN|CMD|LABEL|MAINTAINER|EXPOSE|ENV|ADD|COPY|ENTRYPOINT|VOLUME|USER|WORKDIR|ARG|ONBUILD|STOPSIGNAL|HEALTHCHECK|SHELL)\\b"
+        },
+        {
+          "name": "keyword.other.special-method.dockerfile",
+          "match": "\\b(AS)\\b"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.dockerfile",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.dockerfile",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.dockerfile",
+          "begin": "'",
+          "end": "'"
+        }
+      ]
+    },
+    "variables": {
+      "patterns": [
+        {
+          "name": "variable.other.substitution.dockerfile",
+          "match": "\\$\\{?[A-Za-z_][A-Za-z0-9_]*\\}?"
+        }
+      ]
+    }
+  }
+}

@@ -74,11 +74,19 @@
 			]
 		},
 		"constant": {
-			"match": "\\b(?:true|false|null)\\b",
-			"name": "constant.language.json"
+			"patterns": [
+				{
+					"name": "constant.language.null.json",
+					"match": "\\bnull\\b"
+				},
+				{
+					"name": "constant.language.boolean.json",
+					"match": "\\b(?:true|false)\\b"
+				}
+			]
 		},
 		"number": {
-			"match": "-?(?:0|[1-9]\\d*)\n(?:\n(?:\n\\.\\d+)?\n(?:\n[eE][+-]?\\d+)?)?",
+			"match": "-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?",
 			"name": "constant.numeric.json"
 		},
 		"object": {

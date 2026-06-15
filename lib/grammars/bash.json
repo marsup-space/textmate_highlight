@@ -1,0 +1,80 @@
+{
+  "name": "Shell Script",
+  "version": "1.0.0",
+  "fileTypes": ["sh", "bash", "zsh"],
+  "scopeName": "source.shell",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#keywords" },
+    { "include": "#variables" },
+    { "include": "#commands" },
+    { "include": "#numbers" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.shell",
+          "match": "#.*$"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.shell",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.shell",
+              "match": "\\\\."
+            },
+            {
+              "name": "variable.other.substitution.shell",
+              "match": "\\$\\{?[A-Za-z_][A-Za-z0-9_]*\\}?"
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.shell",
+          "begin": "'",
+          "end": "'"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.shell",
+          "match": "\\b(if|then|else|elif|fi|for|while|until|do|done|case|esac|in|function|return|break|continue|exit|export|local|readonly|declare|typeset|set|unset|trap|source|eval)\\b"
+        }
+      ]
+    },
+    "variables": {
+      "patterns": [
+        {
+          "name": "variable.other.assignment.shell",
+          "match": "\\b[A-Z_][A-Z0-9_]*(?==)"
+        }
+      ]
+    },
+    "commands": {
+      "patterns": [
+        {
+          "name": "entity.name.function.shell",
+          "match": "(?<![A-Za-z0-9_])(\\becho|cd|ls|cat|grep|sed|awk|curl|wget|rm|mv|cp|mkdir|rmdir|touch|chmod|chown|ps|kill|find|tar|gzip|gunzip|zip|unzip|head|tail|less|more|sort|uniq|wc|tr|cut|tee|xargs)\\b"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.shell",
+          "match": "\\b\\d+\\b"
+        }
+      ]
+    }
+  }
+}

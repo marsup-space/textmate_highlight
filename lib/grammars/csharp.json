@@ -1,0 +1,115 @@
+{
+  "name": "C#",
+  "version": "1.0.0",
+  "fileTypes": ["cs"],
+  "scopeName": "source.cs",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#keywords" },
+    { "include": "#types" },
+    { "include": "#numbers" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.block.documentation.cs",
+          "begin": "/\\*\\*",
+          "end": "\\*/"
+        },
+        {
+          "name": "comment.block.cs",
+          "begin": "/\\*",
+          "end": "\\*/"
+        },
+        {
+          "name": "comment.line.double-slash.cs",
+          "match": "//.*$"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.cs",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.cs",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.cs",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            {
+              "name": "constant.character.escape.cs",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.interpolated.cs",
+          "begin": "\\$\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "string.interpolated.cs",
+              "begin": "\\{",
+              "end": "\\}"
+            }
+          ]
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.cs",
+          "match": "\\b(if|else|for|foreach|while|do|switch|case|break|continue|return|throw|try|catch|finally|yield|await|checked|unchecked|default|goto|when)\\b"
+        },
+        {
+          "name": "keyword.declaration.cs",
+          "match": "\\b(class|struct|interface|enum|delegate|namespace|using|record)\\b"
+        },
+        {
+          "name": "storage.modifier.cs",
+          "match": "\\b(public|private|protected|internal|static|sealed|abstract|virtual|override|new|partial|async|readonly|volatile|const|unsafe|extern|static)\\b"
+        },
+        {
+          "name": "keyword.operator.cs",
+          "match": "\\b(is|as|sizeof|typeof|nameof|stackalloc)\\b"
+        },
+        {
+          "name": "keyword.other.cs",
+          "match": "\\b(var|void|true|false|null|this|base)\\b"
+        }
+      ]
+    },
+    "types": {
+      "patterns": [
+        {
+          "name": "storage.type.primitive.cs",
+          "match": "\\b(bool|byte|sbyte|char|short|ushort|int|uint|long|ulong|float|double|decimal|string|object|dynamic)\\b"
+        },
+        {
+          "name": "entity.name.type.cs",
+          "match": "\\b[A-Z][A-Za-z0-9_]*\\b"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.cs",
+          "match": "\\b(0[xX][0-9a-fA-F]+(?:[uUlL][uUlL]?)?|\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?[fFdDmM]?)\\b"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "name": "Lua",
+  "version": "1.0.0",
+  "fileTypes": ["lua"],
+  "scopeName": "source.lua",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#keywords" },
+    { "include": "#constants" },
+    { "include": "#numbers" },
+    { "include": "#functions" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.block.documentation.lua",
+          "begin": "--\\[\\[",
+          "end": "\\]\\]"
+        },
+        {
+          "name": "comment.block.lua",
+          "begin": "--\\[=*\\[",
+          "end": "\\]=*\\]"
+        },
+        {
+          "name": "comment.line.double-dash.lua",
+          "match": "--.*$"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.lua",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.lua",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.lua",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            {
+              "name": "constant.character.escape.lua",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.other.lua",
+          "begin": "\\[=*\\[",
+          "end": "\\]=*\\]"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.lua",
+          "match": "\\b(if|else|elseif|end|for|while|repeat|until|do|break|continue|return|goto|then|not|and|or|in)\\b"
+        },
+        {
+          "name": "storage.declaration.lua",
+          "match": "\\b(local|function)\\b"
+        },
+        {
+          "name": "keyword.other.lua",
+          "match": "\\b(self|true|false|nil)\\b"
+        }
+      ]
+    },
+    "constants": {
+      "patterns": [
+        {
+          "name": "constant.language.lua",
+          "match": "\\b(_G|_VERSION|true|false|nil)\\b"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.lua",
+          "match": "\\b(0[xX][0-9a-fA-F]+|\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)\\b"
+        }
+      ]
+    },
+    "functions": {
+      "patterns": [
+        {
+          "name": "entity.name.function.lua",
+          "match": "\\b([A-Za-z_][A-Za-z0-9_]*)(?=\\s*\\()"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "name": "Scala",
+  "version": "1.0.0",
+  "fileTypes": ["scala", "sbt"],
+  "scopeName": "source.scala",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#keywords" },
+    { "include": "#types" },
+    { "include": "#numbers" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.block.documentation.scala",
+          "begin": "/\\*\\*",
+          "end": "\\*/"
+        },
+        {
+          "name": "comment.block.scala",
+          "begin": "/\\*",
+          "end": "\\*/"
+        },
+        {
+          "name": "comment.line.double-slash.scala",
+          "match": "//.*$"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.triple.scala",
+          "begin": "\"\"\"",
+          "end": "\"\"\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.scala",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.double.scala",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.scala",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.scala",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            {
+              "name": "constant.character.escape.scala",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.interpolated.scala",
+          "begin": "[srf]?\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "string.interpolated.scala",
+              "begin": "\\$([A-Za-z_][A-Za-z0-9_]*|\\{)",
+              "end": "\\}?",
+              "beginCaptures": {
+                "1": { "name": "variable.other.interpolation.scala" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.scala",
+          "match": "\\b(if|else|for|while|do|yield|return|throw|try|catch|finally|match|case|break|continue)\\b"
+        },
+        {
+          "name": "storage.modifier.scala",
+          "match": "\\b(public|private|protected|abstract|final|sealed|implicit|lazy|override|sealed)\\b"
+        },
+        {
+          "name": "keyword.declaration.scala",
+          "match": "\\b(val|var|def|class|object|trait|enum|extends|with|new|this|super|import|package|using|given|then)\\b"
+        },
+        {
+          "name": "keyword.other.scala",
+          "match": "\\b(true|false|null|Nothing|Null|Unit|Any|AnyVal|AnyRef)\\b"
+        }
+      ]
+    },
+    "types": {
+      "patterns": [
+        {
+          "name": "entity.name.type.scala",
+          "match": "\\b[A-Z][A-Za-z0-9_]*\\b"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.scala",
+          "match": "\\b(0[xX][0-9a-fA-F]+|\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?[fFdDlL]?)\\b"
+        }
+      ]
+    }
+  }
+}

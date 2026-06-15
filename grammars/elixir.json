@@ -1,0 +1,67 @@
+{
+  "name": "Elixir",
+  "version": "1.0.0",
+  "fileTypes": ["ex", "exs"],
+  "scopeName": "source.elixir",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#keywords" },
+    { "include": "#numbers" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.elixir",
+          "match": "#.*$"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.elixir",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.elixir",
+              "match": "\\\\."
+            },
+            {
+              "name": "string.interpolated.elixir",
+              "begin": "#\\{",
+              "end": "\\}"
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.elixir",
+          "begin": "'",
+          "end": "'"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.elixir",
+          "match": "\\b(if|else|unless|case|cond|with|for|while|do|end|receive|try|catch|rescue|after|raise|throw|defmodule|def|defp|defmacro|defmacrop|defstruct|defexception|defguard|defguardp|import|alias|require|use|fn|when|and|or|not|in)\\b"
+        },
+        {
+          "name": "storage.modifier.elixir",
+          "match": "\\b(true|false|nil|__MODULE__|__DIR__|__ENV__|__FILE__|__CALLER__|__STACKTRACE__)\\b"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.elixir",
+          "match": "\\b(0[xX][0-9a-fA-F]+|0[bB][01]+|0[oO][0-7]+|\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)\\b"
+        }
+      ]
+    }
+  }
+}

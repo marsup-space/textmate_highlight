@@ -1,0 +1,80 @@
+{
+  "name": "Perl",
+  "version": "1.0.0",
+  "fileTypes": ["pl", "pm"],
+  "scopeName": "source.perl",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#keywords" },
+    { "include": "#numbers" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.perl",
+          "match": "#.*$"
+        },
+        {
+          "name": "comment.block.perl",
+          "begin": "=pod",
+          "end": "=cut"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.perl",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.perl",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.perl",
+          "begin": "'",
+          "end": "'"
+        },
+        {
+          "name": "string.regexp.perl",
+          "begin": "[s|m]?/",
+          "end": "/[a-z]*"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.perl",
+          "match": "\\b(if|else|elsif|unless|while|until|for|foreach|do|last|next|redo|return|goto|given|when|default|break|continue)\\b"
+        },
+        {
+          "name": "storage.declaration.perl",
+          "match": "\\b(my|our|local|sub|use|package|require|use|no)\\b"
+        },
+        {
+          "name": "storage.modifier.perl",
+          "match": "\\b(shift|unshift|push|pop|map|grep|sort|reverse|join|split|sprintf|printf|print|say|chomp|chop|length|substr|index|rindex|substr)\\b"
+        },
+        {
+          "name": "keyword.other.perl",
+          "match": "\\$\\b[\\w\\d_]*"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.perl",
+          "match": "\\b(0[xX][0-9a-fA-F]+|\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)\\b"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "name": "Haskell",
+  "version": "1.0.0",
+  "fileTypes": ["hs"],
+  "scopeName": "source.haskell",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#strings-chars" },
+    { "include": "#keywords" },
+    { "include": "#numbers" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.block.haskell",
+          "begin": "\\{-",
+          "end": "-\\}"
+        },
+        {
+          "name": "comment.line.double-dash.haskell",
+          "match": "--.*$"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.haskell",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.haskell",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    },
+    "strings-chars": {
+      "patterns": [
+        {
+          "name": "string.quoted.single.haskell",
+          "match": "'(\\\\[\\'\"\\\\nrt]|.)'"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.haskell",
+          "match": "\\b(do|if|then|else|case|of|let|in|where|return|import|module|class|instance|type|data|newtype|default|deriving|infixl|infixr|infix|foreign|{-#|\\#-})\\b"
+        },
+        {
+          "name": "storage.type.haskell",
+          "match": "\\b(Int|Integer|Float|Double|Bool|Char|String|Maybe|Either|IO|Ordering|Lists|Show|Eq|Ord|Num|Read|Functor|Applicative|Monad)\\b"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.haskell",
+          "match": "\\b\\d+(?:\\.\\d+)?\\b"
+        }
+      ]
+    }
+  }
+}

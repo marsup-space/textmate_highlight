@@ -1,0 +1,109 @@
+{
+  "name": "Ruby",
+  "version": "1.0.0",
+  "fileTypes": ["rb", "ruby"],
+  "scopeName": "source.ruby",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#keywords" },
+    { "include": "#constants" },
+    { "include": "#numbers" },
+    { "include": "#methods" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.ruby",
+          "match": "#.*$"
+        },
+        {
+          "name": "comment.block.ruby",
+          "begin": "=begin",
+          "end": "=end"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.ruby",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.ruby",
+              "match": "\\\\."
+            },
+            {
+              "name": "string.interpolated.ruby",
+              "begin": "#\\{",
+              "end": "\\}"
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.ruby",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            {
+              "name": "constant.character.escape.ruby",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.percent.ruby",
+          "begin": "%[Qq]?\\[",
+          "end": "\\]"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.ruby",
+          "match": "\\b(if|elsif|else|unless|case|when|while|until|for|in|do|break|next|redo|retry|return|yield|then|end|begin|rescue|ensure|raise|throw|catch)\\b"
+        },
+        {
+          "name": "keyword.declaration.ruby",
+          "match": "\\b(def|class|module|define_method|alias|undef)\\b"
+        },
+        {
+          "name": "storage.modifier.ruby",
+          "match": "\\b(private|protected|public|self|nil|true|false|__FILE__|__LINE__|__dir__|__method__)\\b"
+        },
+        {
+          "name": "keyword.other.ruby",
+          "match": "\\b(require|require_relative|include|extend|prepend|attr_accessor|attr_reader|attr_writer|lambda|proc|new|initialize|method_missing|respond_to\\?|send)\\b"
+        }
+      ]
+    },
+    "constants": {
+      "patterns": [
+        {
+          "name": "constant.language.ruby",
+          "match": "\\b[A-Z][A-Z0-9_]*\\b"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.ruby",
+          "match": "\\b(0[xX][0-9a-fA-F]+|\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)\\b"
+        }
+      ]
+    },
+    "methods": {
+      "patterns": [
+        {
+          "name": "entity.name.function.ruby",
+          "match": "\\b[a-z_][A-Za-z0-9_]*[!?]?(?=\\s*\\()"
+        }
+      ]
+    }
+  }
+}
