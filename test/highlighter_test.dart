@@ -94,6 +94,56 @@ impl<T: Clone> Cache<T> {
             '${token.scopes.first.padRight(50)} | ${token.text(code).replaceAll('\n', '\\n')}');
       }
     });
+
+    // Regression: the parser's `_skipLine` regex used to require a trailing
+    // `\n`, so a `begin`/`while` rule (e.g. Dart's `///` doc comments) would
+    // silently drop everything after the `while` match on the very last line
+    // of input if that line had no trailing newline. The renderer was
+    // originally masked around this by highlighting whole code blocks at
+    // once, but the underlying parser bug also broke any caller that fed the
+    // highlighter single-line inputs.
+    group('while-pattern rules on the last line', () {
+      const commentScope = 'comment.block.documentation.dart';
+
+      List<String> docCommentTexts(String code) {
+        final h = Highlighter(language: 'dart');
+        return [
+          for (final t in h.highlight(code))
+            if (t.scopes.contains(commentScope)) t.text(code),
+        ];
+      }
+
+      test('captures content after /// on a single line with no trailing \\n',
+          () {
+        expect(docCommentTexts('/// doc one'), ['/// doc one']);
+      });
+
+      test('captures content after /// on a line ending with \\n', () {
+        // Sanity check that the newline-terminated case still works.
+        expect(docCommentTexts('/// doc one\n'), ['/// doc one\n']);
+      });
+
+      test('captures content on the final /// line when it has no trailing \\n',
+          () {
+        expect(
+          docCommentTexts('/// first\n/// second'),
+          ['/// first\n/// second'],
+        );
+      });
+
+      test('captures content on the final /// line when it has a trailing \\n',
+          () {
+        expect(
+          docCommentTexts('/// first\n/// second\n'),
+          ['/// first\n/// second\n'],
+        );
+      });
+
+      test('empty /// line is still a doc comment', () {
+        // `///` alone has no extra content, but must still emit a token.
+        expect(docCommentTexts('///'), ['///']);
+      });
+    });
   });
 
   group('HighlightTheme', () {

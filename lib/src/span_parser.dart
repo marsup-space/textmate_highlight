@@ -747,7 +747,12 @@ class _MultilineMatcher extends GrammarMatcher {
     return true;
   }
 
-  static final RegExp _skipLineRegExp = RegExp('.*\n');
+  // Matches an entire line, including its trailing newline. Also matches a
+  // trailing partial line that has no newline (i.e. the last line of input
+  // without a final `\n`), so that `begin`/`while` rules like Dart's `///`
+  // doc-comment grammar don't silently drop any text that happens to land on
+  // the very last line of input.
+  static final RegExp _skipLineRegExp = RegExp(r'.*(\n|$)');
 
   void _skipLine(LineScanner scanner) {
     scanner.scan(_skipLineRegExp);
