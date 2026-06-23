@@ -103,7 +103,7 @@ class User
   end
 
   def greet
-    "Hello, \#{@name}!"
+    "Hello, #@{name}!"
   end
 end
 ''', 'keyword');
