@@ -22,6 +22,7 @@ abstract class SpanParser {
   /// Takes a TextMate [Grammar] and a [String] and outputs a list of
   /// [ScopeSpan]s corresponding to the parsed input.
   static List<ScopeSpan> parse(Grammar grammar, String src) {
+    _IncludeMatcher.resetSelfRecursion();
     final scopeStack = ScopeStack();
     final scanner = LineScanner(src);
     while (!scanner.isDone) {
@@ -53,6 +54,7 @@ abstract class SpanParser {
     String fullSource,
     ParseCheckpoint? checkpoint,
   ) {
+    _IncludeMatcher.resetSelfRecursion();
     if (checkpoint == null) {
       // No checkpoint - do a full parse and build the initial checkpoint.
       final scopeStack = ScopeStack();
@@ -809,7 +811,7 @@ class _PatternMatcher extends GrammarMatcher {
 /// [Repository].
 class _IncludeMatcher extends GrammarMatcher {
   _IncludeMatcher(String include)
-      : include = include.substring(1),
+      : include = include.startsWith('#') ? include.substring(1) : include,
         super._({});
 
   final String include;
@@ -818,11 +820,48 @@ class _IncludeMatcher extends GrammarMatcher {
     return json.containsKey('include');
   }
 
+  /// Bound the `$self` recursion so grammars with cycles in their
+  /// include graph (e.g. c.json's `block_innards` ↔ `c_function_call`
+  /// ↔ `function-call-innards` ↔ `block_innards`) don't blow the Dart
+  /// stack. Reset by [SpanParser.parse] at the top of each parse.
+  static int _selfRecursionDepth = 0;
+  static const int _maxSelfRecursion = 50;
+
+  /// Called by [SpanParser.parse] at the start of every top-level
+  /// parse to clear the $self recursion counter.
+  static void resetSelfRecursion() {
+    _selfRecursionDepth = 0;
+  }
+
   @override
   bool scan(Grammar grammar, LineScanner scanner, ScopeStack scopeStack) {
+    if (include == r'$self') {
+      // TextMate convention: $self means "use the grammar's top-level
+      // patterns". Lets mutually-recursive rules work (e.g. nested
+      // templates in C++, nested blocks in Ruby, embedded HTML in
+      // Markdown).
+      if (_selfRecursionDepth >= _maxSelfRecursion) {
+        // Bail. The outer parser loop will advance and try the next
+        // rule. Legitimate $self chains are bounded by input
+        // consumption and rarely exceed a handful of levels.
+        return false;
+      }
+      _selfRecursionDepth++;
+      try {
+        return grammar.topLevelMatcher.scan(grammar, scanner, scopeStack);
+      } finally {
+        _selfRecursionDepth--;
+      }
+    }
     final matcher = grammar.repository.matchers[include];
     if (matcher == null) {
-      throw StateError('Could not find $include in the repository.');
+      // Cross-grammar include (e.g. `source.css`, `text.html.basic`) or
+      // an unknown `#name`. We don't ship the referenced sub-language,
+      // so silently skip — the outer parser loop will advance and try
+      // the next rule. Throwing here used to crash the app on any
+      // grammar that embedded a sub-language we don't have, including
+      // the full VSCode c/cpp/php/ruby grammars we now vendor in.
+      return false;
     }
     return matcher.scan(grammar, scanner, scopeStack);
   }
@@ -830,7 +869,7 @@ class _IncludeMatcher extends GrammarMatcher {
   @override
   Map<String, Object?> toJson() {
     return {
-      'include': include,
+      'include': include == r'$self' ? r'$self' : '#$include',
     };
   }
 }
