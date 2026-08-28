@@ -31,8 +31,14 @@ class Highlighter {
   static Future<void> initialize(List<String> languages) async {
     for (final language in languages) {
       if (_cache.containsKey(language)) continue;
-      final json = await _loadGrammar(language);
-      _cache[language] = Grammar.fromJson(jsonDecode(json));
+      try {
+        final json = await _loadGrammar(language);
+        _cache[language] = Grammar.fromJson(jsonDecode(json));
+      } catch (_) {
+        // No embedded/file grammar for this language — skip it instead of
+        // failing the whole initialization. Callers discover the gap via
+        // [isLanguageLoaded] and fall back to plain text.
+      }
     }
   }
 
