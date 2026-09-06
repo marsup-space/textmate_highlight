@@ -4,7 +4,84 @@ import 'package:textmate_highlight/textmate_highlight.dart';
 void main() {
   group('Highlighter', () {
     setUp(() async {
-      await Highlighter.initialize(['dart', 'python', 'javascript', 'rust']);
+      await Highlighter.initialize(['dart', 'python', 'javascript', 'rust', 'v']);
+    });
+
+    test('highlights V code with tokens', () {
+      const code = '''
+module main
+
+import strings
+
+// A simple struct.
+pub struct User {
+mut:
+	name string
+	age  int
+}
+
+enum Color {
+	red
+	green
+	blue
+}
+
+fn (u &User) greet() string {
+	msg := 'Hello, \${u.name}!'
+	println('%s is \${u.age} years old')
+	return msg
+}
+
+fn main() {
+	mut u := User{
+		name: 'Bob'
+		age: 42
+	}
+	if u.age >= 0x2A && true {
+		u.greet()
+	}
+	nums := [1, 2, 3]!
+	for i, n in nums {
+		println('\$i -> \$n')
+	}
+}
+''';
+      final highlighter = Highlighter(language: 'v');
+      final tokens = highlighter.highlight(code);
+
+      expect(tokens, isNotEmpty);
+
+      // Tokens only cover styled spans; gaps render as plain text.
+      // Reconstructing the source (tokens + gaps) must reproduce it
+      // exactly — proves offsets are monotonic and in-bounds.
+      final buffer = StringBuffer();
+      var lastEnd = 0;
+      for (final t in tokens) {
+        expect(t.start, greaterThanOrEqualTo(lastEnd), reason: 'overlap');
+        if (t.start > lastEnd) {
+          buffer.write(code.substring(lastEnd, t.start));
+        }
+        buffer.write(t.text(code));
+        lastEnd = t.end;
+      }
+      expect(lastEnd, lessThanOrEqualTo(code.length));
+      buffer.write(code.substring(lastEnd));
+      expect(buffer.toString(), code);
+
+      final scopes = tokens.expand((t) => t.scopes).toSet();
+      bool has(String needle) => scopes.any((s) => s.contains(needle));
+      expect(scopes, contains('keyword.fn.v'), reason: 'fn keyword');
+      expect(scopes, contains('storage.type.struct.v'), reason: 'struct keyword');
+      expect(scopes, contains('keyword.control.v'), reason: 'if/for keywords');
+      expect(
+        scopes,
+        contains('storage.type.primitive.v'),
+        reason: 'string/int types',
+      );
+      expect(has('string.quoted'), isTrue, reason: 'string literals');
+      expect(has('constant.numeric'), isTrue, reason: 'numeric literals');
+      expect(has('comment.line'), isTrue, reason: 'line comments');
+      expect(has('entity.name.function.v'), isTrue, reason: 'function names');
     });
 
     test('highlights Dart code with tokens', () {
