@@ -119,7 +119,7 @@ class Highlighter {
       if (uri != null) {
         final file = File.fromUri(uri);
         if (file.existsSync()) {
-          return file.readAsString();
+          return await file.readAsString();
         }
       }
     } catch (_) {}
